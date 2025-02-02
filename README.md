@@ -70,6 +70,21 @@ To update SEO content, edit:
 ```
 app/code/Werules/GameShop/view/frontend/templates/seo/head.phtml
 ```
+---
+
+## Screenshots
+
+1. **Main shop screen**:
+
+   ![Main Screen](https://raw.githubusercontent.com/blopa/magento-2-retro-game-shop-page/refs/heads/main/screenshots/gameshop-screenshot-1.png)
+
+2. **Product listing screen**:
+
+   ![Product Listing Screen](https://raw.githubusercontent.com/blopa/magento-2-retro-game-shop-page/refs/heads/main/screenshots/gameshop-screenshot-2.png)
+
+3. **Product details screen**:
+
+   ![Product Details Screen](https://raw.githubusercontent.com/blopa/magento-2-retro-game-shop-page/refs/heads/main/screenshots/gameshop-screenshot-3.png)
 
 ---
 
