@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/layout_generic.xsd"
+      layout="customs_blank">
+
+    <head>
+<!--        <css src="Werules_GameShop::css/tailwind.min.css"/>-->
+        <css src="Werules_GameShop::css/gameshop.css"/>
+        <script src="Werules_GameShop::js/vue.global.js"/>
+        <script src="Werules_GameShop::js/tailwind.min.js"/>
+    </head>
+
+    <referenceBlock name="head.additional">
+        <block class="Magento\Framework\View\Element\Template"
+               name="werules.gameshop.head"
+               template="Werules_GameShop::seo/head.phtml"/>
+    </referenceBlock>
+
+    <body>
+        <!-- We reference only 'root' container, so the page is entirely blank. -->
+        <referenceContainer name="root">
+            <block class="Magento\Framework\View\Element\Template"
+                   name="werules.gameshop"
+                   template="Werules_GameShop::index.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+* {
+    font-family: 'Press Start 2P', monospace !important;
+    text-transform: uppercase !important;
+    font-size: 18px !important;
+}
+
+button, a, input, select {
+    font-family: inherit !important;
+    text-transform: inherit !important;
+    font-size: inherit !important;
+}
+
+/* Scrollbar styling for Webkit browsers (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+    width: 12px; /* Width of vertical scrollbar */
+    height: 12px; /* Height of horizontal scrollbar */
+}
+
+::-webkit-scrollbar-track {
+    background: black; /* Background of scrollbar */
+    border: 2px solid orange; /* Retro border */
+}
+
+::-webkit-scrollbar-thumb {
+    background: orange; /* Color of the scrollbar */
+    border-radius: 2px;
+    border: 2px solid black; /* Creates a "pixelated" effect */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(255, 165, 0); /* Slightly lighter orange on hover */
+}
+
+/* Firefox Scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: orange black;
+}
+
+@keyframes loadingDots {
+    0% { content: "."; }
+    33% { content: ".."; }
+    66% { content: "..."; }
+}
+
+.dots::after {
+    content: "...";
+    animation: loadingDots 1.5s infinite steps(1);
+}
+
+.avatar {
+    image-rendering: pixelated;
+}

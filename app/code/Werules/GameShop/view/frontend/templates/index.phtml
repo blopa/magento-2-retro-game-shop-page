@@ -1,0 +1,376 @@
+<?php
+/* @var $block \Magento\Framework\View\Element\Template */
+
+// Get current currency code
+$currencyBlock = $this->getLayout()->createBlock(\Magento\Directory\Block\Currency::class);
+$currencyCode = $currencyBlock->getCurrentCurrencyCode();
+
+// Get current locale in the required format
+$localeResolver = \Magento\Framework\App\ObjectManager::getInstance()->get(\Magento\Framework\Locale\ResolverInterface::class);
+$localeCode = $localeResolver->getLocale(); // Example: "en_US"
+$languageCode = str_replace('_', '-', $localeCode); // Convert "en_US" to "en-US"
+
+$storeManager = \Magento\Framework\App\ObjectManager::getInstance()->get(\Magento\Store\Model\StoreManagerInterface::class);
+$currentStoreName = $storeManager->getStore()->getGroup()->getName();
+?>
+
+<div
+    id="app"
+    class="min-h-screen bg-black text-orange-200 font-mono p-6 flex flex-col space-y-4 text-lg"
+    data-categories-url="<?= $block->getUrl('rest/V1/werules/gameshop/categories'); ?>"
+    data-products-url="<?= $block->getUrl('rest/V1/werules/gameshop/products'); ?>"
+    data-cart-count-url="<?= $block->getUrl('rest/V1/werules/gameshop/list-cart'); ?>"
+    data-cart-add-url="<?= $block->getUrl('rest/V1/werules/gameshop/add-cart'); ?>"
+    data-currency-code="<?= $block->escapeHtml($currencyCode) ?>"
+    data-language-code="<?= $block->escapeHtml($languageCode) ?>"
+    data-home-url="<?= $block->getUrl(''); ?>"
+>
+    <!-- HEADER -->
+    <div class="border-2 border-orange-500 p-3 sticky top-0 bg-black z-50">
+        <h1 class="text-3xl md:text-4xl font-bold tracking-widest uppercase">
+            <?php echo $currentStoreName; ?>
+        </h1>
+    </div>
+
+    <!-- MAIN WRAPPER: sidebar + left panel -->
+    <div class="flex flex-col md:flex-row-reverse space-y-4 md:space-y-0 flex-1">
+        <!-- RIGHT MENU (Sidebar) -->
+        <div class="w-full md:w-96 border-2 border-orange-500 p-4 flex flex-col space-y-3">
+
+            <!-- Shopkeeper Avatar -->
+            <div class="border-2 border-orange-500 p-2 flex justify-center items-center bg-black">
+                <img
+                    src="<?= $block->getViewFileUrl('Werules_GameShop::images/shopkeeper.png'); ?>"
+                    alt="<?= __('Shopkeeper Avatar'); ?>"
+                    class="w-32 h-32 object-cover border border-orange-500 bg-black avatar"
+                >
+            </div>
+
+            <!-- CART COUNT -->
+            <div class="mb-4">
+                <div class="text-lg text-orange-400"><?= __('Cart items:'); ?></div>
+                <div class="text-2xl font-bold">{{ cartCount }}</div>
+            </div>
+
+            <!-- Menu Buttons -->
+            <button
+                class="block w-full py-3 border border-orange-500 hover:bg-orange-900 text-center px-4 text-lg"
+                :class="{'bg-orange-500 text-black': menuSelection === 'Buy'}"
+                @click="onMenuItemClick('Buy')"
+            >
+                <?= __('Buy'); ?>
+            </button>
+            <button
+                class="block w-full py-3 border border-orange-500 hover:bg-orange-900 text-center px-4 text-lg"
+                :class="{'bg-orange-500 text-black': menuSelection === 'Sell'}"
+                @click="onMenuItemClick('Sell')"
+            >
+                <?= __('Sell'); ?>
+            </button>
+            <button
+                class="block w-full py-3 border border-orange-500 hover:bg-orange-900 text-center px-4 text-lg"
+                :class="{'bg-orange-500 text-black': menuSelection === 'Talk'}"
+                @click="onMenuItemClick('Talk')"
+            >
+                <?= __('Talk'); ?>
+            </button>
+            <button
+                class="block w-full py-3 border border-orange-500 hover:bg-orange-900 text-center px-4 text-lg"
+                @click="onMenuItemClick('Exit')"
+            >
+                <?= __('Exit'); ?>
+            </button>
+
+            <!-- Link to Real Cart -->
+            <a
+                href="<?= $block->getUrl('checkout/cart'); ?>"
+                class="mt-auto block w-full text-center py-3 bg-amber-400 text-black border border-orange-500 hover:bg-orange-600 transition text-xl"
+            >
+                <?= __('Go to Cart'); ?>
+            </a>
+        </div>
+
+        <!-- LEFT PANEL -->
+        <div class="flex-1 border-2 border-orange-500 p-6 relative">
+            <!-- BUY SECTION (only visible when "Buy" is selected) -->
+            <div v-if="menuSelection === 'Buy'">
+                <!-- Title Row -->
+                <div class="mb-4">
+                    <h2 class="text-xl md:text-2xl font-semibold uppercase" v-if="activeView === 'list'">
+                        <?php echo __('What would you like to buy?'); ?>
+                    </h2>
+                    <h2 class="text-xl md:text-2xl font-semibold uppercase" v-else-if="activeView === 'detail' && currentProduct">
+                        <?php echo __('Item Details'); ?>
+                    </h2>
+                </div>
+
+                <!-- Category Tabs (only on LIST view) -->
+                <div v-if="activeView === 'list'" class="flex flex-wrap gap-2 mb-3">
+                    <!-- Show "Loading..." when fetching categories -->
+                    <p v-if="loadingCategories" class="text-xl text-orange-400 animate-pulse">
+                        <?= __('Loading') ?> <span class="dots"></span>
+                    </p>
+
+                    <!-- Dynamic category buttons (only show if NOT loading) -->
+                    <button
+                        v-else
+                        v-for="cat in categories"
+                        :key="cat.id"
+                        class="px-3 py-1 border border-orange-500 hover:bg-orange-500 hover:text-black transition focus:outline-none"
+                        :class="{'bg-orange-500 text-black': currentCategoryId === cat.id}"
+                        @click="loadProducts(cat.id, cat.name)"
+                    >
+                        <!-- TODO: figure out how to translate this with knockout.js -->
+                        {{ cat.name }}
+                    </button>
+                </div>
+
+                <!-- LIST VIEW: Product Rows -->
+                <div v-if="activeView === 'list'">
+                    <!-- Show welcome message if no category is selected -->
+                    <div v-if="currentCategoryId === null" class="flex flex-col items-center justify-center h-64 border-2 border-orange-500 p-6">
+                        <p class="text-3xl text-orange-400 text-center">
+                            <?= __('Welcome to our shop!'); ?>
+                        </p>
+                        <p class="text-3xl text-orange-400 text-center mt-2">
+                            <?= __('Please select a category before shopping.'); ?>
+                        </p>
+                    </div>
+
+                    <!-- Show products only if a category is selected -->
+                    <div v-else>
+                        <div v-if="hasFetchedProducts && products.length === 0" class="text-center text-orange-400 text-lg mt-6">
+                            <?= __('No products found in this category.'); ?>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div
+                                v-for="product in products"
+                                :key="product.id"
+                                class="border border-orange-500 p-4 flex flex-col md:flex-row items-center md:justify-between gap-4 cursor-pointer hover:bg-orange-900 transition text-xl"
+                                @click="showDetails(product)"
+                            >
+                                <img
+                                    :src="product.image_url"
+                                    alt=""
+                                    class="w-32 h-32 md:w-40 md:h-40 object-cover border border-orange-500 bg-black flex-shrink-0"
+                                >
+                                <div class="text-center md:text-left flex-1">
+                                    <span class="block text-lg md:text-2xl">{{ product.name }}</span>
+                                    <span class="block text-xl md:text-2xl text-orange-300 mt-2">{{ formatPrice(product.price) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DETAIL VIEW -->
+                <div v-else-if="activeView === 'detail' && currentProduct" class="space-y-4">
+                    <p class="italic text-lg mb-2">
+                        <?= sprintf(__('Ah, the %s! This item might do something special...'), '<strong>{{ currentProduct.name }}</strong>'); ?>
+                    </p>
+                    <!-- Single product block -->
+                    <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 space-x-0 md:space-x-6 items-start border border-orange-500 p-4">
+                        <img
+                            :src="currentProduct.image_url"
+                            :alt="currentProduct.name"
+                            class="w-72 h-72 object-cover border border-orange-500 bg-black flex-shrink-0 md:w-72 md:h-72 w-full h-auto"
+                        >
+                        <div class="flex-1">
+                            <h3 class="text-2xl font-bold">{{ currentProduct.name }}</h3>
+                            <p class="text-orange-300 text-xl mb-3">{{ formatPrice(currentProduct.price) }}</p>
+                            <p class="text-lg text-orange-300">
+                                {{ currentProduct.description.length > 400 ? currentProduct.description.substring(0, 400) + '...' : currentProduct.description }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6">
+                        <button
+                            @click="addToCart(currentProduct.id)"
+                            class="px-5 py-3 bg-orange-500 text-black border border-orange-500 hover:bg-orange-600 transition text-xl"
+                        >
+                            <?= __('Add to Cart'); ?>
+                        </button>
+                        <button
+                            @click="goBackToList()"
+                            class="px-5 py-3 border border-orange-500 hover:bg-orange-900 text-orange-200 transition text-xl"
+                        >
+                            <?= __('Back'); ?>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SELL SECTION (only visible when "Sell" is selected) -->
+            <div v-else-if="menuSelection === 'Sell'" class="flex items-center justify-center h-64 border-2 border-orange-500 p-6">
+                <p class="text-3xl text-orange-400 text-center">
+                    <?= __("Sell? What do you mean by sell? We're the shop here..."); ?>
+                </p>
+            </div>
+
+            <!-- TALK SECTION (only visible when "Talk" is selected) -->
+            <div v-else-if="menuSelection === 'Talk'" class="flex items-center justify-center h-64 border-2 border-orange-500 p-6">
+                <p class="text-3xl text-orange-400 text-center">
+                    {{ currentTalkLine }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const { createApp } = Vue;
+
+    createApp({
+        data() {
+            return {
+                // Menu selection logic
+                menuSelection: 'Buy', // Default is "Buy"
+                // Talk lines
+                talkLines: [
+                    "<?= __('No refunds, traveler. Good luck out there!'); ?>",
+                    "<?= __('Legends say a lost sword of kings might turn up any day now.'); ?>",
+                    "<?= __('Our potions are brewed by a mysterious hermit from afar.'); ?>",
+                    "<?= __('Beware of the thieves lurking around at night!'); ?>",
+                    "<?= __('I heard the dragon from the mountain likes the products here.'); ?>",
+                    "<?= __('The shopkeeper is always watching...'); ?>",
+                ],
+                currentTalkLine: "",
+
+                // Existing data for the shop
+                cartCount: 0,
+                categories: [],
+                products: [],
+                currentCategoryId: null,
+                currentCategoryName: '',
+                activeView: 'list', // 'list' or 'detail'
+                currentProduct: null,
+                hasFetchedProducts: false,
+                loadingCategories: true, // Track if categories are loading
+            };
+        },
+        mounted() {
+            this.fetchCartCount();
+            this.fetchCategories();
+            // If starting in "Buy" mode, we might eventually load categories or show "Welcome..." text
+        },
+        methods: {
+            getApiUrls() {
+                const el = document.getElementById('app');
+                return {
+                    categoriesUrl: el.dataset.categoriesUrl,
+                    productsUrl: el.dataset.productsUrl,
+                    cartCountUrl: el.dataset.cartCountUrl,
+                    cartAddUrl: el.dataset.cartAddUrl,
+                    currencyCode: el.dataset.currencyCode,
+                    languageCode: el.dataset.languageCode,
+                    baseUrl: el.dataset.homeUrl,
+                };
+            },
+            formatPrice(value) {
+                const { currencyCode, languageCode } = this.getApiUrls();
+                const code = currencyCode || 'USD';
+                return new Intl.NumberFormat(languageCode || 'en-US', {
+                    style: 'currency',
+                    currency: code
+                }).format(value);
+            },
+            fetchCartCount() {
+                const { cartCountUrl } = this.getApiUrls();
+                fetch(cartCountUrl)
+                    .then(res => res.json())
+                    .then(count => { this.cartCount = count; })
+                    .catch(err => console.error('Error fetching cart count:', err));
+            },
+            fetchCategories() {
+                this.loadingCategories = true; // Start loading
+                const { categoriesUrl } = this.getApiUrls();
+                fetch(categoriesUrl)
+                    .then(res => res.json())
+                    .then(data => {
+                        this.categories = data;
+                        this.loadingCategories = false; // Stop loading
+                    })
+                    .catch(err => {
+                        console.error('Error fetching categories:', err);
+                        alert('Could not fetch categories.');
+                        this.loadingCategories = false; // Stop loading even if there is an error
+                    });
+            },
+            loadProducts(categoryId, categoryName) {
+                this.activeView = 'list';
+                this.currentProduct = null;
+                this.hasFetchedProducts = false;
+                this.currentCategoryId = categoryId;
+                this.currentCategoryName = categoryName || '';
+
+                const { productsUrl } = this.getApiUrls();
+                const url = new URL(productsUrl, window.location.origin);
+                if (categoryId) {
+                    url.searchParams.set('category_id', categoryId);
+                }
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        this.products = data;
+                        this.hasFetchedProducts = true;
+                    })
+                    .catch(err => {
+                        console.error('Error fetching products:', err);
+                        alert('Could not fetch products.');
+                    });
+            },
+            showDetails(product) {
+                this.currentProduct = product;
+                this.activeView = 'detail';
+            },
+            goBackToList() {
+                this.currentProduct = null;
+                this.activeView = 'list';
+            },
+            addToCart(productId) {
+                const { cartAddUrl } = this.getApiUrls();
+                fetch(cartAddUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId, qty: 1 })
+                })
+                    .then(res => res.json())
+                    .then(response => {
+                        const [success, message, cartCount] = response;
+                        this.cartCount = cartCount;
+                    })
+                    .catch(err => {
+                        console.error('Error adding product to cart:', err);
+                        alert('Could not add product to cart.');
+                    });
+            },
+
+            // Handle menu button clicks
+            onMenuItemClick(selection) {
+                // If user clicked "Exit", redirect to homepage
+                if (selection === 'Exit') {
+                    const { baseUrl } = this.getApiUrls();
+                    window.location.href = baseUrl;
+                    return;
+                }
+
+                // Otherwise, set the menu selection
+                this.menuSelection = selection;
+
+                // If they clicked "Buy", go to list mode
+                if (selection === 'Buy') {
+                    this.activeView = 'list';
+                    this.currentProduct = null;
+                }
+                // If they clicked "Talk", pick a random talk line
+                else if (selection === 'Talk') {
+                    const randomIndex = Math.floor(Math.random() * this.talkLines.length);
+                    this.currentTalkLine = this.talkLines[randomIndex];
+                }
+            }
+        }
+    }).mount('#app');
+</script>

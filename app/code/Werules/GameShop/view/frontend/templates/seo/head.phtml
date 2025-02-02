@@ -1,0 +1,41 @@
+<?php
+/** @var $block \Magento\Framework\View\Element\Template */
+$mediaUrl =$block->getViewFileUrl('Werules_GameShop::images/shopkeeper.png');
+$baseUrl = $block->getBaseUrl();
+$storeManager = \Magento\Framework\App\ObjectManager::getInstance()->get(\Magento\Store\Model\StoreManagerInterface::class);
+$currentStoreName = $storeManager->getStore()->getGroup()->getName();
+$pageDescription = __('Greetings, traveler! I see you come from a far land. I am the shopkeeper of the GameShop. Here you will find the most amazing accessories for your journey. Come in and take a look!');
+?>
+
+<!-- Title & Meta Description -->
+<title><?= $currentStoreName ?></title>
+<meta name="description" content="<?= $pageDescription ?>"/>
+
+<!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="<?= $currentStoreName ?>"/>
+<meta property="og:description" content="<?= $pageDescription ?>"/>
+<meta property="og:image" content="<?= $mediaUrl ?>"/>
+<meta property="og:image:alt" content="<?= __('GameShop Shopkeeper Avatar') ?>"/>
+<meta property="og:url" content="<?= $baseUrl ?>game-shop"/>
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="<?= $currentStoreName ?>"/>
+<meta name="twitter:description" content="<?= $pageDescription ?>"/>
+<meta name="twitter:image" content="<?= $mediaUrl ?>"/>
+
+<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "<?= $currentStoreName ?>",
+        "description": "<?= $pageDescription ?>",
+        "image": "<?= $mediaUrl ?>",
+        "url": "<?= $baseUrl ?>game-shop",
+        "publisher": {
+        "@type": "Organization",
+        "name": "<?= $currentStoreName ?>",
+        "logo": "<?= $mediaUrl ?>"
+    }
+}
+</script>
