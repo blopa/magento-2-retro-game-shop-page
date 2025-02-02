@@ -3,6 +3,8 @@
 ## Overview
 GameShop is a custom Magento 2 extension that provides an interactive **game marketplace**. It includes **frontend pages, API endpoints, and SEO optimizations**, allowing users to browse and manage gaming-related products.
 
+![Main Screen](https://raw.githubusercontent.com/blopa/magento-2-retro-game-shop-page/refs/heads/main/screenshots/gameshop-screenshot-1.png)
+
 ## Features
 - 🛒 **Cart Management API**: Retrieve and add products to the cart.
 - 📂 **Category API**: Fetch active product categories.
