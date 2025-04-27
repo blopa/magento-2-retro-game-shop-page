@@ -1,6 +1,9 @@
 <?php
 namespace Werules\GameShop\Model;
 
+use Magento\Framework\DataObject;
+use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use Werules\GameShop\Api\CartManagementInterface;
 use Magento\Checkout\Model\Cart;
 use Magento\Catalog\Api\ProductRepositoryInterface;
@@ -25,6 +28,16 @@ class CartManagement implements CartManagementInterface
     protected $scopeConfig;
 
     /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
+     * @var CartRepositoryInterface
+     */
+    private $cartRepository;
+
+    /**
      * Constructor
      *
      * @param Cart $cart
@@ -33,10 +46,14 @@ class CartManagement implements CartManagementInterface
     public function __construct(
         Cart $cart,
         ProductRepositoryInterface $productRepository,
+        StoreManagerInterface $storeManager,
+        CartRepositoryInterface $cartRepository,
         ScopeConfigInterface $scopeConfig
     ) {
         $this->cart = $cart;
         $this->productRepository = $productRepository;
+        $this->cartRepository = $cartRepository;
+        $this->storeManager = $storeManager;
         $this->scopeConfig = $scopeConfig;
     }
 
@@ -79,31 +96,36 @@ class CartManagement implements CartManagementInterface
         }
 
         try {
-            $product = $this->productRepository->getById($productId);
+            $storeId = $this->storeManager->getStore()->getId();
+            $product = $this->productRepository->getById($productId, false, $storeId);
+
+            $requestInfo = new DataObject(['qty' => $qty]);
+
             $quote = $this->cart->getQuote();
+            $quote->addProduct($product, $requestInfo);
 
-            // Add product to quote
-            $quote->addProduct($product, $qty);
+            $quote->collectTotals()
+                ->setTotalsCollectedFlag(false)
+                ->collectTotals();
 
-            // Recalculate totals & save
-            $quote->collectTotals()->save();
+            $this->cartRepository->save($quote);
 
             return [
                 'success' => true,
                 'message' => sprintf('Added "%s" to cart.', $product->getName()),
-                'cart_count' => (int)$quote->getItemsQty()
+                'cart_count' => (int) $quote->getItemsQty(),
             ];
         } catch (NoSuchEntityException $e) {
             return [
                 'success' => false,
                 'message' => 'Product not found.',
-                'cart_count' => $this->getCartItemCount()
+                'cart_count' => $this->getCartItemCount(),
             ];
         } catch (\Exception $e) {
             return [
                 'success' => false,
                 'message' => 'Could not add product to cart: ' . $e->getMessage(),
-                'cart_count' => $this->getCartItemCount()
+                'cart_count' => $this->getCartItemCount(),
             ];
         }
     }

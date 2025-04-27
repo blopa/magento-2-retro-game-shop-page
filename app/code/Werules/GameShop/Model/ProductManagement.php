@@ -76,7 +76,7 @@ class ProductManagement implements ProductManagementInterface
 
         $collection = $this->productCollectionFactory->create();
         $collection->addCategoriesFilter(['in' => $categoryId]);
-        $collection->addAttributeToSelect(['name', 'price', 'sku', 'image', 'short_description']);
+        $collection->addAttributeToSelect(['name', 'price', 'sku', 'image', 'short_description', 'special_price', 'special_from_date', 'special_to_date']);
         $collection->addAttributeToFilter('status', \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED);
         $collection->addAttributeToFilter('visibility', ['neq' => \Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE]);
         $collection->setStoreId($store->getId());
@@ -102,11 +102,27 @@ class ProductManagement implements ProductManagementInterface
                     $imageUrl = $store->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA) . 'catalog/product/placeholder/image.jpg';
                 }
 
+                $price = (float) $product->getPrice();
+                $specialPrice = $product->getSpecialPrice();
+
+                if ($specialPrice) {
+                    $from = $product->getSpecialFromDate();
+                    $to = $product->getSpecialToDate();
+                    $today = (new \DateTime('today'))->format('Y-m-d H:i:s');
+
+                    $fromOk = !$from || $from <= $today;
+                    $toOk = !$to || $to >= $today;
+
+                    if ($fromOk && $toOk) {
+                        $price = (float) $specialPrice;
+                    }
+                }
+
                 $products[] = [
                     'id'           => $product->getId(),
                     'sku'          => $sku,
                     'name'         => $product->getName(),
-                    'price'        => $product->getPrice(),
+                    'price'        => $price,
                     'image_url'    => $imageUrl,
                     'description'  => $product->getData('short_description'),
                 ];

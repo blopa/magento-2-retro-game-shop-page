@@ -52,4 +52,12 @@ button, a, input, select {
 
 .avatar {
     image-rendering: pixelated;
+    object-fit: none;
+    object-position: 0 0;
+    animation: blink 5s steps(1) infinite;
+}
+
+@keyframes blink {
+    0%, 94%, 100%   { object-position:   0 0; }
+    95%, 98%        { object-position: -144px 0; }
 }

@@ -325,10 +325,20 @@ $currentStoreName = $storeManager->getStore()->getGroup()->getName();
             showDetails(product) {
                 this.currentProduct = product;
                 this.activeView = 'detail';
+
+                // TODO: maybe implement this one day
+                // const url = new URL(window.location.href);
+                // url.searchParams.set('sku', product.sku);
+                // window.history.pushState({}, '', url);
             },
             goBackToList() {
                 this.currentProduct = null;
                 this.activeView = 'list';
+
+                // TODO: maybe implement this one day
+                // const url = new URL(window.location.href);
+                // url.searchParams.delete('sku');
+                // window.history.pushState({}, '', url);
             },
             addToCart(productId) {
                 const { cartAddUrl } = this.getApiUrls();
