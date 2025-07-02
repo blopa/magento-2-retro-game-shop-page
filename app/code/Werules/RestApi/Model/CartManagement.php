@@ -1,11 +1,11 @@
 <?php
-namespace Werules\GameShop\Model;
+namespace Werules\RestApi\Model;
 
 use Magento\Framework\DataObject;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
-use Werules\GameShop\Api\CartManagementInterface;
+use Werules\RestApi\Api\CartManagementInterface;
 use Magento\Checkout\Model\Cart;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -70,7 +70,7 @@ class CartManagement implements CartManagementInterface
      */
     private function isModuleEnabled()
     {
-        return $this->scopeConfig->isSetFlag('gameshop/general/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        return $this->scopeConfig->isSetFlag('restapi/general/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
     }
 
     /**
@@ -99,7 +99,7 @@ class CartManagement implements CartManagementInterface
     public function addItemToCart($productId, $qty = 1, $couponCode = null)
     {
         if (!$this->isModuleEnabled()) {
-            return ['success' => false, 'message' => 'GameShop is disabled.', 'cart_count' => 0];
+            return ['success' => false, 'message' => 'RestApi is disabled.', 'cart_count' => 0];
         }
 
         try {

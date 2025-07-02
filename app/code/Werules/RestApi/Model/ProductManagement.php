@@ -1,8 +1,8 @@
 <?php
-namespace Werules\GameShop\Model;
+namespace Werules\RestApi\Model;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Werules\GameShop\Api\ProductManagementInterface;
+use Werules\RestApi\Api\ProductManagementInterface;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\InventorySalesAdminUi\Model\GetSalableQuantityDataBySku;
@@ -54,7 +54,7 @@ class ProductManagement implements ProductManagementInterface
      */
     private function isModuleEnabled()
     {
-        return $this->scopeConfig->isSetFlag('gameshop/general/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        return $this->scopeConfig->isSetFlag('restapi/general/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
     }
 
     /**

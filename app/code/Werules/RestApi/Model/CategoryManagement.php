@@ -1,10 +1,10 @@
 <?php
-namespace Werules\GameShop\Model;
+namespace Werules\RestApi\Model;
 
-use Werules\GameShop\Api\CategoryManagementInterface;
+use Werules\RestApi\Api\CategoryManagementInterface;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\Store\Model\StoreManagerInterface;
-use Werules\GameShop\Api\ProductManagementInterface;
+use Werules\RestApi\Api\ProductManagementInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 
 class CategoryManagement implements CategoryManagementInterface
@@ -55,7 +55,7 @@ class CategoryManagement implements CategoryManagementInterface
      */
     private function isModuleEnabled()
     {
-        return $this->scopeConfig->isSetFlag('gameshop/general/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        return $this->scopeConfig->isSetFlag('restapi/general/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
     }
 
     /**
