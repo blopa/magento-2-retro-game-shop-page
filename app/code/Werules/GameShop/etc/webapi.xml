@@ -1,40 +1,4 @@
 <?xml version="1.0"?>
-<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi/etc/webapi.xsd">
-
-    <!-- 1) Fetch Categories: GET /rest/V1/werules/gameshop/categories -->
-    <route url="/V1/werules/gameshop/categories" method="GET">
-        <service class="Werules\GameShop\Api\CategoryManagementInterface" method="getActiveCategories"/>
-        <resources>
-            <!-- For demonstration, allow anonymous access; restrict in production as needed. -->
-            <resource ref="anonymous"/>
-        </resources>
-    </route>
-
-    <!-- 2) Fetch Products by Category: GET /rest/V1/werules/gameshop/products?category_id=XXX -->
-    <route url="/V1/werules/gameshop/products" method="GET">
-        <service class="Werules\GameShop\Api\ProductManagementInterface" method="getProductsByCategoryId"/>
-        <resources>
-            <resource ref="anonymous"/>
-        </resources>
-    </route>
-
-    <!-- 3) GET /rest/V1/werules/gameshop/cart/items -->
-    <route url="/V1/werules/gameshop/list-cart" method="GET">
-        <service class="Werules\GameShop\Api\CartManagementInterface" method="getCartItemCount"/>
-        <resources>
-            <resource ref="anonymous"/>
-        </resources>
-    </route>
-
-    <!-- 4) POST /rest/V1/werules/gameshop/cart/add -->
-    <route url="/V1/werules/gameshop/add-cart" method="POST">
-        <service class="Werules\GameShop\Api\CartManagementInterface" method="addItemToCart"/>
-        <resources>
-            <resource ref="anonymous"/>
-        </resources>
-        <data>
-            <!-- We pass productId, qty and couponCode in POST data -->
-        </data>
-    </route>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi/etc/webapi.xsd">
+    <!-- Define the API routes for the Werules_GameShop module -->
 </routes>
