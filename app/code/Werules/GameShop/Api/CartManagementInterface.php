@@ -15,6 +15,7 @@ interface CartManagementInterface
      *
      * @param int $productId
      * @param float|int $qty
+     * @param string|null $couponCode
      * @return array
      *
      * Example response structure:
@@ -24,5 +25,5 @@ interface CartManagementInterface
      *   'cart_count' => int
      * ]
      */
-    public function addItemToCart($productId, $qty = 1);
+    public function addItemToCart($productId, $qty = 1, $couponCode = null);
 }

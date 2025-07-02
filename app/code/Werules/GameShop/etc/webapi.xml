@@ -34,7 +34,7 @@
             <resource ref="anonymous"/>
         </resources>
         <data>
-            <!-- We pass productId, qty in POST data -->
+            <!-- We pass productId, qty and couponCode in POST data -->
         </data>
     </route>
 </routes>

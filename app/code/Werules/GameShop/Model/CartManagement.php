@@ -4,6 +4,7 @@ namespace Werules\GameShop\Model;
 use Magento\Framework\DataObject;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Psr\Log\LoggerInterface;
 use Werules\GameShop\Api\CartManagementInterface;
 use Magento\Checkout\Model\Cart;
 use Magento\Catalog\Api\ProductRepositoryInterface;
@@ -37,6 +38,9 @@ class CartManagement implements CartManagementInterface
      */
     private $cartRepository;
 
+    /** @var LoggerInterface */
+    private $logger;
+
     /**
      * Constructor
      *
@@ -48,13 +52,15 @@ class CartManagement implements CartManagementInterface
         ProductRepositoryInterface $productRepository,
         StoreManagerInterface $storeManager,
         CartRepositoryInterface $cartRepository,
-        ScopeConfigInterface $scopeConfig
+        ScopeConfigInterface $scopeConfig,
+        LoggerInterface $logger,
     ) {
         $this->cart = $cart;
         $this->productRepository = $productRepository;
         $this->cartRepository = $cartRepository;
         $this->storeManager = $storeManager;
         $this->scopeConfig = $scopeConfig;
+        $this->logger = $logger;
     }
 
     /**
@@ -87,9 +93,10 @@ class CartManagement implements CartManagementInterface
      *
      * @param int $productId
      * @param int|float $qty
+     * @param string|null $couponCode
      * @return array
      */
-    public function addItemToCart($productId, $qty = 1)
+    public function addItemToCart($productId, $qty = 1, $couponCode = null)
     {
         if (!$this->isModuleEnabled()) {
             return ['success' => false, 'message' => 'GameShop is disabled.', 'cart_count' => 0];
@@ -109,6 +116,12 @@ class CartManagement implements CartManagementInterface
                 ->collectTotals();
 
             $this->cartRepository->save($quote);
+
+            if ($couponCode) {
+                $quote->setCouponCode($couponCode)
+                    ->collectTotals()
+                    ->save();
+            }
 
             return [
                 'success' => true,
