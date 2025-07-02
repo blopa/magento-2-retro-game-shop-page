@@ -17,10 +17,10 @@ $currentStoreName = $storeManager->getStore()->getGroup()->getName();
 <div
     id="app"
     class="min-h-screen bg-black text-orange-200 font-mono p-6 flex flex-col space-y-4 text-lg"
-    data-categories-url="<?= $block->getUrl('rest/V1/werules/gameshop/categories'); ?>"
-    data-products-url="<?= $block->getUrl('rest/V1/werules/gameshop/products'); ?>"
-    data-cart-count-url="<?= $block->getUrl('rest/V1/werules/gameshop/list-cart'); ?>"
-    data-cart-add-url="<?= $block->getUrl('rest/V1/werules/gameshop/add-cart'); ?>"
+    data-categories-url="<?= $block->getUrl('rest/V1/werules/restapi/categories'); ?>"
+    data-products-url="<?= $block->getUrl('rest/V1/werules/restapi/products'); ?>"
+    data-cart-count-url="<?= $block->getUrl('rest/V1/werules/restapi/cart/count'); ?>"
+    data-cart-add-url="<?= $block->getUrl('rest/V1/werules/restapi/cart/add'); ?>"
     data-currency-code="<?= $block->escapeHtml($currencyCode) ?>"
     data-language-code="<?= $block->escapeHtml($languageCode) ?>"
     data-home-url="<?= $block->getUrl(''); ?>"
@@ -279,23 +279,49 @@ $currentStoreName = $storeManager->getStore()->getGroup()->getName();
             },
             fetchCartCount() {
                 const { cartCountUrl } = this.getApiUrls();
-                fetch(cartCountUrl)
+                fetch(cartCountUrl, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                })
                     .then(res => res.json())
-                    .then(count => { this.cartCount = count; })
-                    .catch(err => console.error('Error fetching cart count:', err));
+                    .then(data => { 
+                        this.cartCount = parseInt(data) || 0; 
+                    })
+                    .catch(err => {
+                        console.error('Error fetching cart count:', err);
+                        this.cartCount = 0;
+                    });
             },
             fetchCategories() {
                 this.loadingCategories = true; // Start loading
                 const { categoriesUrl } = this.getApiUrls();
-                fetch(categoriesUrl)
-                    .then(res => res.json())
+                
+                fetch(categoriesUrl, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error('Failed to fetch categories');
+                        }
+                        return res.json();
+                    })
                     .then(data => {
-                        this.categories = data;
+                        // Map the API response to the expected format
+                        this.categories = data.map(category => ({
+                            id: category.id,
+                            name: category.name,
+                            url_key: category.url_key,
+                            path: category.path,
+                            level: category.level,
+                            children_count: category.children_count
+                        }));
                         this.loadingCategories = false; // Stop loading
                     })
                     .catch(err => {
                         console.error('Error fetching categories:', err);
-                        alert('Could not fetch categories.');
+                        alert('Could not fetch categories: ' + (err.message || 'Unknown error'));
+                        this.categories = [];
                         this.loadingCategories = false; // Stop loading even if there is an error
                     });
             },
@@ -308,18 +334,39 @@ $currentStoreName = $storeManager->getStore()->getGroup()->getName();
 
                 const { productsUrl } = this.getApiUrls();
                 const url = new URL(productsUrl, window.location.origin);
-                if (categoryId) {
-                    url.searchParams.set('category_id', categoryId);
-                }
-                fetch(url)
-                    .then(res => res.json())
+                
+                // The new API expects the categoryId as part of the URL path
+                const finalUrl = `${url}?categoryId=${encodeURIComponent(categoryId)}`;
+                
+                fetch(finalUrl, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error('Failed to fetch products');
+                        }
+                        return res.json();
+                    })
                     .then(data => {
-                        this.products = data;
+                        // Map the API response to the expected format
+                        this.products = data.map(product => ({
+                            id: product.id,
+                            name: product.name,
+                            price: product.final_price,
+                            image: product.image,
+                            is_salable: product.is_salable,
+                            qty: product.qty || 0,
+                            sku: product.sku,
+                            url_key: product.url_key
+                        }));
                         this.hasFetchedProducts = true;
                     })
                     .catch(err => {
                         console.error('Error fetching products:', err);
-                        alert('Could not fetch products.');
+                        alert('Could not fetch products: ' + (err.message || 'Unknown error'));
+                        this.products = [];
+                        this.hasFetchedProducts = true;
                     });
             },
             showDetails(product) {
@@ -345,16 +392,34 @@ $currentStoreName = $storeManager->getStore()->getGroup()->getName();
                 fetch(cartAddUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ productId, qty: 1 })
+                    body: JSON.stringify({ 
+                        productId: productId, 
+                        qty: 1,
+                        couponCode: null // Optional parameter
+                    })
                 })
-                    .then(res => res.json())
+                    .then(res => {
+                        if (!res.ok) {
+                            return res.json().then(err => {
+                                throw new Error(err.message || 'Failed to add to cart');
+                            });
+                        }
+                        return res.json();
+                    })
                     .then(response => {
-                        const [success, message, cartCount] = response;
-                        this.cartCount = cartCount;
+                        // Update cart count from the response
+                        this.cartCount = response.cart_count || 0;
+                        
+                        // Show success message
+                        if (response.success && response.message) {
+                            alert(response.message);
+                        } else if (!response.success && response.message) {
+                            alert(response.message);
+                        }
                     })
                     .catch(err => {
                         console.error('Error adding product to cart:', err);
-                        alert('Could not add product to cart.');
+                        alert(err.message || 'Could not add product to cart.');
                     });
             },
 

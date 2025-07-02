@@ -1,0 +1,47 @@
+{
+    "name": "werules/magento2-restapi",
+    "description": "REST API module for Magento 2 that provides endpoints for product, category, and cart management",
+    "type": "magento2-module",
+    "version": "1.0.0",
+    "license": [
+        "MIT"
+    ],
+    "require": {
+        "php": "~7.4.0||~8.1.0||~8.2.0",
+        "magento/framework": "^103.0.0",
+        "magento/module-catalog": "^104.0.0",
+        "magento/module-checkout": "^100.4.0",
+        "magento/module-store": "^101.1.0"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Werules\\RestApi\\": ""
+        }
+    },
+    "authors": [
+        {
+            "name": "Werules",
+            "email": "contact@werules.com",
+            "homepage": "https://www.werules.com",
+            "role": "Developer"
+        }
+    ],
+    "keywords": [
+        "magento",
+        "magento2",
+        "rest",
+        "api",
+        "cart",
+        "products",
+        "categories"
+    ],
+    "support": {
+        "email": "support@werules.com",
+        "issues": "https://github.com/werules/magento2-restapi/issues",
+        "wiki": "https://github.com/werules/magento2-restapi/wiki",
+        "source": "https://github.com/werules/magento2-restapi"
+    }
+}

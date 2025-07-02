@@ -1,5 +1,5 @@
 <?php
-namespace Werules\GameShop\Api;
+namespace Werules\RestApi\Api;
 
 interface CategoryManagementInterface
 {

@@ -1,26 +1,38 @@
-# GameShop Magento 2 Extension
+# GameShop Magento 2 Extensions
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Magento 2.4.x](https://img.shields.io/badge/Magento-2.4.x-brightgreen)
 
 ## Overview
-GameShop is a custom Magento 2 extension that provides an interactive **game marketplace**. It includes **frontend pages, API endpoints, and SEO optimizations**, allowing users to browse and manage gaming-related products.
+This repository contains two Magento 2 extensions that work together to provide an interactive **game marketplace** experience:
+
+1. **Werules_GameShop**: The frontend module that provides the game shop interface
+2. **Werules_RestApi**: The API module that handles all the backend functionality
+
+Together, they provide a complete solution for browsing and managing gaming-related products with a retro gaming aesthetic.
 
 ![Main Screen](https://raw.githubusercontent.com/blopa/magento-2-retro-game-shop-page/refs/heads/main/screenshots/gameshop-screenshot-1.png)
 
 ## Features
-- 🛒 **Cart Management API**: Retrieve and add products to the cart
-- 📂 **Category API**: Fetch active product categories with localized names
-- 🎮 **Product API**: Get product details including salable quantities and pricing
-- 🌍 **Multi-language & Multi-currency**: Built-in support for internationalization
-- 🏗 **Modern Frontend**:
+
+### Werules_GameShop (Frontend)
+- 🎮 **Interactive Game Shop Interface**
    - Built with Vue.js 3 for reactive interfaces
    - Styled with TailwindCSS for responsive design
    - Retro gaming aesthetic with pixel-perfect UI
-- 🔍 **SEO Optimized**:
+- 🌍 **Multi-language & Multi-currency**
+   - Built-in support for internationalization
+   - Dynamic language and currency switching
+- 🔍 **SEO Optimized**
    - Dynamic meta tags for social sharing (Facebook, Twitter, WhatsApp)
    - JSON-LD structured data for rich search results
    - Semantic HTML5 markup
+
+### Werules_RestApi (Backend)
+- 🛒 **Cart Management API**: Retrieve and add products to the cart
+- 📂 **Category API**: Fetch active product categories with localized names
+- 🎮 **Product API**: Get product details including salable quantities and pricing
+- 🔒 **Secure API Endpoints**: Proper authentication and validation
 
 ## 🚀 Installation
 
@@ -33,19 +45,43 @@ GameShop is a custom Magento 2 extension that provides an interactive **game mar
 
 ### ⚙️ Installation Steps
 
-### 1️⃣ **Copy the Extension to Magento**
-Place the extension files inside:
-```
-app/code/Werules/GameShop/
-```
+### Installation Methods
 
-### 2️⃣ **Enable the Extension**
-Run the following commands:
-```sh
-bin/magento module:enable Werules_GameShop
-bin/magento setup:upgrade
-bin/magento cache:flush
-```
+#### Method 1: Using Composer (Recommended)
+
+1. Install both modules using Composer:
+   ```sh
+   composer require werules/magento2-rest-api
+   composer require werules/magento2-game-shop
+   ```
+
+2. Enable the modules and run setup:
+   ```sh
+   bin/magento module:enable Werules_RestApi Werules_GameShop
+   bin/magento setup:upgrade
+   bin/magento setup:di:compile
+   bin/magento setup:static-content:deploy -f
+   bin/magento cache:flush
+   ```
+
+#### Method 2: Manual Installation
+
+1. Copy the extension files to your Magento installation:
+   ```
+   app/code/Werules/GameShop/
+   app/code/Werules/RestApi/
+   ```
+
+2. Enable the modules and run setup:
+   ```sh
+   bin/magento module:enable Werules_RestApi Werules_GameShop
+   bin/magento setup:upgrade
+   bin/magento setup:di:compile
+   bin/magento setup:static-content:deploy -f
+   bin/magento cache:flush
+   ```
+
+> **Note**: Werules_GameShop depends on Werules_RestApi, so make sure to install both modules.
 
 ### 3️⃣ **Deploy Static Content (for production)**
 ```sh
@@ -76,6 +112,90 @@ https://yourmagento.com/game-shop
 | `/rest/V1/gameshop/cart/add`   | `POST`    | Add product to cart.          |
 | `/rest/V1/gameshop/categories` | `GET`     | Get active categories.        |
 | `/rest/V1/gameshop/products/{category_id}` | `GET` | Get products by category. |
+
+---
+
+## 📖 Documentation
+
+### API Endpoints (Werules_RestApi)
+
+#### Get Categories
+- **Endpoint**: `GET /rest/V1/werules/restapi/categories`
+- **Response**: 
+  ```json
+  [
+    {
+      "id": 4,
+      "name": "Consoles",
+      "url_key": "consoles",
+      "path": "1/2/4",
+      "level": 2,
+      "children_count": 0
+    },
+    ...
+  ]
+  ```
+
+#### Get Products by Category
+- **Endpoint**: `GET /rest/V1/werules/restapi/products?categoryId={categoryId}`
+- **Parameters**:
+  - `categoryId` (required): The ID of the category
+- **Response**:
+  ```json
+  [
+    {
+      "id": 1,
+      "name": "Super Game Console",
+      "sku": "SGC-001",
+      "price": 299.99,
+      "final_price": 249.99,
+      "image": "/media/catalog/product/s/g/sgc-001.jpg",
+      "url_key": "super-game-console",
+      "is_salable": true,
+      "qty": 10
+    },
+    ...
+  ]
+  ```
+
+#### Get Cart Item Count
+- **Endpoint**: `GET /rest/V1/werules/restapi/cart/count`
+- **Response**: Integer representing the number of items in the cart
+  ```json
+  3
+  ```
+
+#### Add Item to Cart
+- **Endpoint**: `POST /rest/V1/werules/restapi/cart/add`
+- **Request Body**:
+  ```json
+  {
+    "productId": 1,
+    "qty": 1,
+    "couponCode": "DISCOUNT10"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "message": "Super Game Console was added to your shopping cart.",
+    "cart_count": 1
+  }
+  ```
+
+### Frontend Integration (Werules_GameShop)
+
+The GameShop frontend communicates with the RestApi module using the following endpoints:
+
+```javascript
+const apiEndpoints = {
+  categories: '/rest/V1/werules/restapi/categories',
+  products: '/rest/V1/werules/restapi/products',
+  cartCount: '/rest/V1/werules/restapi/cart/count',
+  addToCart: '/rest/V1/werules/restapi/cart/add'
+};
+```
 
 ---
 

@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+    <!-- Get Categories -->
+    <route url="/V1/werules/restapi/categories" method="GET">
+        <service class="Werules\RestApi\Api\CategoryManagementInterface" method="getActiveCategories"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+
+    <!-- Get Products by Category -->
+    <route url="/V1/werules/restapi/products" method="GET">
+        <service class="Werules\RestApi\Api\ProductManagementInterface" method="getProductsByCategoryId"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+
+    <!-- Get Cart Count -->
+    <route url="/V1/werules/restapi/cart/count" method="GET">
+        <service class="Werules\RestApi\Api\CartManagementInterface" method="getCartItemCount"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+
+    <!-- Add to Cart -->
+    <route url="/V1/werules/restapi/cart/add" method="POST">
+        <service class="Werules\RestApi\Api\CartManagementInterface" method="addItemToCart"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+</routes>

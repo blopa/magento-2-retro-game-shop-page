@@ -1,0 +1,50 @@
+{
+    "name": "werules/magento2-gameshop",
+    "description": "A retro-style game shop frontend for Magento 2 with Vue.js and TailwindCSS",
+    "type": "magento2-module",
+    "version": "1.0.0",
+    "license": [
+        "MIT"
+    ],
+    "require": {
+        "php": "~7.4.0||~8.1.0||~8.2.0",
+        "magento/framework": "^103.0.0",
+        "magento/module-store": "^101.1.0",
+        "magento/module-theme": "^101.1.0",
+        "werules/magento2-restapi": "^1.0.0"
+    },
+    "suggest": {
+        "magento/module-catalog": "Required for product and category functionality"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Werules\\GameShop\\": ""
+        }
+    },
+    "authors": [
+        {
+            "name": "Werules",
+            "email": "contact@werules.com",
+            "homepage": "https://www.werules.com",
+            "role": "Developer"
+        }
+    ],
+    "keywords": [
+        "magento",
+        "magento2",
+        "game",
+        "shop",
+        "vuejs",
+        "tailwind",
+        "retro"
+    ],
+    "support": {
+        "email": "support@werules.com",
+        "issues": "https://github.com/werules/magento2-gameshop/issues",
+        "wiki": "https://github.com/werules/magento2-gameshop/wiki",
+        "source": "https://github.com/werules/magento2-gameshop"
+    }
+}

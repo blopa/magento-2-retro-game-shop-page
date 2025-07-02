@@ -1,6 +1,4 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <preference for="Werules\GameShop\Api\CategoryManagementInterface" type="Werules\GameShop\Model\CategoryManagement"/>
-    <preference for="Werules\GameShop\Api\ProductManagementInterface" type="Werules\GameShop\Model\ProductManagement"/>
-    <preference for="Werules\GameShop\Api\CartManagementInterface" type="Werules\GameShop\Model\CartManagement"/>
+    <!-- Configuration for the GameShop frontend module -->
 </config>
